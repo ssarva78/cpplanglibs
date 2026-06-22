@@ -1,0 +1,162 @@
+#ifndef __LANGLIBS_POINTER_DEF__
+#define __LANGLIBS_POINTER_DEF__
+
+#include<mutex>
+
+/** @file */
+
+namespace lang {
+  /** @cond */
+  template <typename T, bool ThreadSafe = false> class pointernode;
+  /** @endcond */
+
+  /**
+    @class pointer
+    @brief Manages references to an object and safely destroys the object when there is no
+    more active reference to the object. This class eliminates the need for pointers 
+    and associated memory management completely.
+  */
+  template<typename T, bool ThreadSafe = false> class pointer {
+    public:
+
+      /**
+        @brief Constructs the pointer with the arguments required to construct the
+        underlying object of type @c T that the pointer holds reference to. If no argument
+        is passed, the default constructor of the object of type @c T is invoked.
+
+        @param args - Arguments required to construct the object of type @c T
+       */
+      template<typename... TArgs> pointer(TArgs...);
+
+      /**
+        @brief Copy constructor that points to the same object as referenced by the
+        argument and increments the reference counter by 1
+
+        @param pointer - Pointer that holds reference to the object
+       */
+      pointer(const pointer<T, ThreadSafe>&);
+
+      /**
+        @brief Move constructor that transfers reference ownership to the pointer being
+        constructed.
+
+        @param rvalue - Rvalue reference to the pointer whose ownership is being moved
+       */
+      pointer(pointer<T, ThreadSafe>&&);
+
+      /**
+        @brief Decrements the reference by 1. If the reference count becomes 0, the
+        underlying object is also destructed
+        @param
+       */
+       ~pointer();
+
+       /**
+        @brief Assigns a pointer to another, decrements the reference count of lvalue and
+        increment the reference count of rvalue
+        @return this
+        */
+      pointer<T, ThreadSafe>& operator = (const pointer<T, ThreadSafe>&);
+
+      /**
+        @brief Moves a pointer to `this`. The argument pointer becomes null and the
+        ownership of the reference is transferred to `this`
+        @return this
+        */
+      pointer<T, ThreadSafe>& operator = (pointer<T, ThreadSafe>&&);
+
+      /**
+        @brief Dereference the pointer to the underlying object from a constant pointer
+        @throw nullpointer_error Throws null pointer error when there is no object that
+        the pointer points to
+       */
+      const T& operator *() const;
+
+      /**
+        @brief Dereference the pointer to the underlying object. This is primarily used
+        as setter method
+        @throw nullpointer_error Throws null pointer error when there is no object that
+        the pointer points to
+       */
+      T& operator *();
+
+      /**
+        @brief Returns number of references currently held on the underlying object
+        @return Number of references currently held on the underlying object
+       */
+      long long references() const;
+
+      /**
+        @brief Checks if the pointer points to a non-null object
+        @retval true - if there pointer points to a non-null object
+        @retval false - if there is no non-null object pointed by the pointer
+       */
+      bool isnull() const;
+
+      /**
+        @brief Convenience method equivalent to `not isnull()`
+        @retval true - if there is no non-null object pointed by the pointer
+        @retval false - if there pointer points to a non-null object
+       */
+      operator bool() const;
+
+      /**
+        @brief Compares whether two pointers point to the same underlying object
+        @retval true - if both the pointers point to the same object instance
+        @retval false - if both the pointers point to the different object instance
+        */
+      bool operator == (const pointer<T, ThreadSafe>&) const;
+
+      /**
+        @brief Compares whether two pointers point to the same underlying object
+        @retval true - if both the pointers point to the different object instance
+        @retval false - if both the pointers point to the same object instance
+        */
+      bool operator != (const pointer<T, ThreadSafe>&) const = default;
+
+      /**
+        @brief Creates a null pointer that refers to @c nullptr address
+        @return Null pointer
+       */
+      static const pointer<T, ThreadSafe> null();
+
+      /**
+        @brief Creates dynamic binding pointer to a child class
+        @param args - Arguments to construct child class
+        @return pointer - pointer to base class that dynamically binds with child class
+
+        Sample usage:
+        To create a pointer of type `baseclass` that dynamically binds to `derivedclass`
+        @code{.cpp}
+        pointer<baseclass> basePointer = pointer<baseclass>::dynamic<derivedclass>(...);
+        @endcode
+        To deference the base pointer to child class
+        @code{.cpp}
+        derivedclass &child = (derivedclass&)*basePointer;
+        @endcode
+        */
+      template<typename K, typename... KArgs>
+      static pointer<T, ThreadSafe> dynamic(KArgs...);
+
+    private:
+      static_assert(!std::is_pointer<T>::value,
+        "Template type cannot be a pointer");
+      pointernode<T, ThreadSafe>* _val;
+      explicit pointer(const void*) : _val(nullptr) {}
+      explicit pointer(pointernode<T, ThreadSafe>* ptr) : _val(ptr) {}
+      void delete_reference();
+  };
+
+  template<typename T>
+  using concurrent_pointer = pointer<T, true>;
+
+  class nullpointer_error : public std::runtime_error {
+    public:
+      nullpointer_error();
+  };
+
+}; //namespace lang
+
+#include <impl/pointer.hpp>
+#endif //__LANGLIBS_POINTER_DEF__
+

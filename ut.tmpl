@@ -1,0 +1,26 @@
+#include <unittest>
+
+using namespace cppunittest;
+
+int run_unittest() {
+  unittest ut("TEST NAME", __FILE__);
+
+  ut
+    .test(
+      "TEST CASE DESCRIPTION",
+      [&]() -> void {
+      })
+
+      ;
+
+  return ut.error() + ut.failure();
+}
+
+int main() {
+  try {
+    return run_unittest();
+  } catch(...) {
+    return -1;
+  }
+}
+

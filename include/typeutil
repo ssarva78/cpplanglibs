@@ -1,0 +1,27 @@
+#ifndef __LANGLIBS_TYPEUTIL_DEF__
+#define __LANGLIBS_TYPEUTIL_DEF__
+
+#include <string>
+#include <typeinfo>
+
+namespace lang {
+  using namespace std::string_literals;
+
+  namespace typeutil {
+
+    template <typename T> std::string classname(const T&);
+    std::string classname(const std::type_info&);
+
+    #ifdef _PREFIX_CLASSNAME_TO_ERR_MSG_
+    #error _PREFIX_CLASSNAME_TO_ERR_MSG_ definition conflict
+    #else
+    #define _PREFIX_CLASSNAME_TO_ERR_MSG_(c,s) cppmslib::typeutil::classname(typeid(c)) + (s.empty()? "": ": "s + s)
+    #endif
+
+  };
+};
+
+#include <impl/typeutil.hpp>
+
+#endif //__LANGLIBS_TYPEUTIL_DEF__
+
