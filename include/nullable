@@ -1,0 +1,108 @@
+#ifndef __LANGLIBS_NULLABLE_DEF__
+#define __LANGLIBS_NULLABLE_DEF__
+
+#include<pointer>
+
+/** @file */
+
+namespace lang {
+
+  /**
+    @class nullable
+    @brief Functionally similar to `std::optional`. However, this class is built with
+    `lang::pointer`. This class also has simpler and fewer methods than `std::optional`,
+    yet maintains all the functionalities
+
+    `lang::nullable` class uses the thread unsafe variant of `lang::pointer` and hence
+    it is not thread safe.
+   */
+  template<typename T> class nullable {
+    public:
+      /**
+        @brief Constructs null nullable object
+       */
+      nullable();
+
+      /**
+        @brief Constructs nullable object for the object referred by the pointer
+        @param pointer - Pointer that holds the value for the nullable
+       */
+      explicit nullable(const pointer<T>&);
+
+      /**
+        @brief Returns refernce to the underlying object from constant nullable
+        @return Object that the pointer points to
+        @throw nullpointer_error Throws null pointer error when there is nullable is null
+       */
+      const T& operator *() const;
+
+      /**
+        @brief Returns refernce to the underlying object. This is primarily used
+        @return Object that the pointer points to
+        @throw nullpointer_error Throws null pointer error when there is nullable is null
+       */
+      T& operator *();
+
+      /**
+        @brief Checks if the nullable has a non-null object
+        @retval true - if nullable has non-null value
+        @retval false - if nullable has no value
+       */
+      bool isnull() const;
+
+      /**
+        @brief Convenience method equivalent to `not isnull()`
+        @retval true - if nullable has value
+        @retval false - if nullable has no value
+       */
+      operator bool() const;
+
+      /**
+        @brief Returns the value if nullable has a value; otherwise returns the value
+        passed in the argument
+        @param value - Default value to be returned if nullable is null
+        @return Returns the immutable object copy constructed either from nullable value
+        or from the value passed in the argument
+
+        This is equivalent of:
+        @code{.cpp}
+        mynullable? *mynullable : default_value;
+        @endcode
+       */
+      T or_else(const T&) const;
+
+      /**
+        @brief Returns the value if nullable has a value; otherwise returns the value
+        returned by the argument function. This returns a immutable object
+        @param function - Function that returns type `T` and takes no argument
+        @return Returns the immutable object copy constructed either from nullable value
+        or from the function return value
+
+        This is equivalent of:
+        @code{.cpp}
+        mynullable? *mynullable : getter_function();
+        @endcode
+       */
+      T or_else(std::function<T()>) const;
+
+      /**
+        @brief Method to return the pointer that holds the value of a constant nullable
+        @return Constant pointer that holds the value of the nullable
+       */
+      const pointer<T>& operator &() const;
+
+      /**
+        @brief Method to return the pointer that holds the value of the nullable
+        @return The pointer that holds the value of the nullable
+       */
+      pointer<T>& operator &();
+
+    private:
+      pointer<T> _ptr;
+  };
+
+}; //namespace lang
+
+#include<impl/nullable.hpp>
+
+#endif //__LANGLIBS_NULLABLE_DEF__

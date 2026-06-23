@@ -1,8 +1,6 @@
 #ifndef __LANGLIBS_POINTER_DEF__
 #define __LANGLIBS_POINTER_DEF__
 
-#include<mutex>
-
 /** @file */
 
 namespace lang {
@@ -15,6 +13,15 @@ namespace lang {
     @brief Manages references to an object and safely destroys the object when there is no
     more active reference to the object. This class eliminates the need for pointers 
     and associated memory management completely.
+
+    Supports both regular and thread safe variants of the pointer. By default,
+    the pointer is not thread safe. The thread safe instance can be created by passing
+    `true` as second template argument. Example:
+    @code{.cpp}
+    pointer<T> p; // this creates regular pointer that is not thread safe
+    pointer<T, true> p; // this creates thread safe pointer
+    @endcode
+    `concurrent_pointer<T>` is an alias to `pointer<T, true>`
   */
   template<typename T, bool ThreadSafe = false> class pointer {
     public:
@@ -67,6 +74,7 @@ namespace lang {
 
       /**
         @brief Dereference the pointer to the underlying object from a constant pointer
+        @return Object that the pointer points to
         @throw nullpointer_error Throws null pointer error when there is no object that
         the pointer points to
        */
@@ -75,6 +83,7 @@ namespace lang {
       /**
         @brief Dereference the pointer to the underlying object. This is primarily used
         as setter method
+        @return Object that the pointer points to
         @throw nullpointer_error Throws null pointer error when there is no object that
         the pointer points to
        */

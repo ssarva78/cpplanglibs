@@ -3,15 +3,16 @@
 using namespace cppunittest;
 
 int run_unittest() {
-  unittest ut("TEST NAME", __FILE__);
+  unittest ut("Test xxxx", __FILE__);
 
   ut
     .test(
       "TEST CASE DESCRIPTION",
-      [&]() -> void {
-      })
+      __testfunc__ {
+      }
+    )
 
-      ;
+    ;
 
   return ut.error() + ut.failure();
 }
