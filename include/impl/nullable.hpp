@@ -2,40 +2,39 @@
 #define __LANGLIBS_NULLABLE_IMPL__
 
 namespace lang {
-  template<typename T> nullable<T>::nullable() : _ptr(pointer<T>::null()) {}
+  template<typename T, bool ThreadSafe>
+  nullable<T, ThreadSafe>::nullable() : _ptr(pointer<T, ThreadSafe>::null()) {}
 
-  template<typename T> nullable<T>::nullable(const pointer<T>& ptr) : _ptr(ptr) {}
+  template<typename T, bool ThreadSafe>
+  nullable<T, ThreadSafe>::nullable(const pointer<T, ThreadSafe>& ptr) : _ptr(ptr) {}
 
-  template<typename T> const T& nullable<T>::operator *() const
+  template<typename T, bool ThreadSafe>
+  const T& nullable<T, ThreadSafe>::operator *() const
     { return *_ptr; }
 
-  template<typename T> T& nullable<T>::operator *()
+  template<typename T, bool ThreadSafe> T& nullable<T, ThreadSafe>::operator *()
     { return *_ptr; }
 
-  template<typename T> bool nullable<T>::isnull() const
+  template<typename T, bool ThreadSafe> bool nullable<T, ThreadSafe>::isnull() const
     { return _ptr.isnull(); }
 
-  template<typename T> nullable<T>::operator bool() const
+  template<typename T, bool ThreadSafe> nullable<T, ThreadSafe>::operator bool() const
     { return not _ptr.isnull(); }
 
-  template<typename T> T nullable<T>::or_else(const T& value) const
+  template<typename T, bool ThreadSafe>
+  T nullable<T, ThreadSafe>::or_else(const T& value) const
     { return isnull()? value : *_ptr; }
 
-  template<typename T> T nullable<T>::or_else(std::function<T()> func) const
+  template<typename T, bool ThreadSafe>
+  T nullable<T, ThreadSafe>::or_else(std::function<T()> func) const
     { return isnull()? func() : *_ptr; }
 
-  template<typename T> template<typename E, typename... EArgs>
-  T nullable<T>::or_throw(EArgs... args) {
+  template<typename T, bool ThreadSafe> template<typename E, typename... EArgs>
+  T nullable<T, ThreadSafe>::or_throw(EArgs... args) {
     if (not isnull())
       return *_ptr;
     throw E(args...);
   }
-
-  template<typename T> const pointer<T>& nullable<T>::operator &() const
-    { return _ptr; }
-
-  template<typename T> pointer<T>& nullable<T>::operator &()
-    { return _ptr; }
 
 };
 

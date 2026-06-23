@@ -22,6 +22,10 @@ namespace lang {
     pointer<T, true> p; // this creates thread safe pointer
     @endcode
     `concurrent_pointer<T>` is an alias to `pointer<T, true>`
+
+    Though concurrent_pointer is thread safe with respect to the reference to the object,
+    if the object is mutable, concurrent updates to the object may have thread safety
+    issues. It is the responsibility of the object class to implement thread safety.
   */
   template<typename T, bool ThreadSafe = false> class pointer {
     public:

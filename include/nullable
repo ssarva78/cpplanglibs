@@ -13,10 +13,22 @@ namespace lang {
     `lang::pointer`. This class also has simpler and fewer methods than `std::optional`,
     yet maintains all the functionalities
 
-    `lang::nullable` class uses the thread unsafe variant of `lang::pointer` and hence
-    it is not thread safe.
+    `nullable` preserves the pointer to the value in assignement operators
+
+    Supports both regular and thread safe variants of the nullable. By default,
+    the nullable is not thread safe. The thread safe instance can be created by passing
+    `true` as second template argument. Example:
+    @code{.cpp}
+    nullable<T> p; // this creates regular nullable that is not thread safe
+    nullable<T, true> p; // this creates thread safe nullable
+    @endcode
+    `concurrent_nullable<T>` is an alias to `nullable<T, true>`
+
+    Though concurrent_nullable is thread safe with respect to the reference to the value,
+    if the value is mutable, concurrent updates to the value may have thread safety
+    issues. It is the responsibility of the value class to implement thread safety.
    */
-  template<typename T> class nullable {
+  template<typename T, bool ThreadSafe = false> class nullable {
     public:
       /**
         @brief Constructs null nullable object
@@ -27,7 +39,7 @@ namespace lang {
         @brief Constructs nullable object for the object referred by the pointer
         @param pointer - Pointer that holds the value for the nullable
        */
-      explicit nullable(const pointer<T>&);
+      explicit nullable(const pointer<T, ThreadSafe>&);
 
       /**
         @brief Returns refernce to the underlying object from constant nullable
@@ -94,21 +106,12 @@ namespace lang {
       template<typename E, typename... EArgs>
       T or_throw(EArgs...);
 
-      /**
-        @brief Method to return the pointer that holds the value of a constant nullable
-        @return Constant pointer that holds the value of the nullable
-       */
-      const pointer<T>& operator &() const;
-
-      /**
-        @brief Method to return the pointer that holds the value of the nullable
-        @return The pointer that holds the value of the nullable
-       */
-      pointer<T>& operator &();
-
     private:
       pointer<T> _ptr;
   };
+
+  template<typename T>
+  using concurrent_nullable = nullable<T, true>;
 
 }; //namespace lang
 

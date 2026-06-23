@@ -72,26 +72,6 @@ int run_unittest() {
     )
 
     .test(
-      "Get the pointer from nullable",
-      __testfunc__ {
-        nullable<int> opt1(5);
-        // cppcheck-suppress redundantPointerOp
-        expect<int>(*&opt1).is(5);
-
-        pointer<int> p = &opt1;
-        *p = 20;
-        expect<int>(*opt1).is(20);
-
-        const nullable<int> opt2(5);
-        // cppcheck-suppress redundantPointerOp
-        expect<int>(*&opt2).is(5);
-
-        nullable<int> opt_null;
-        expect<bool>(&opt_null).isfalse();
-      }
-    )
-
-    .test(
       "Throws null pointer error on retrieving value from empty nullable",
       __testfunc__ {
         nullable<int> opt_null;
