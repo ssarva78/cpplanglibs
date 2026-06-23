@@ -45,3 +45,9 @@ docs: clean
 	@rm -rf docs
 	@doxygen
 
+coverage:
+	@gcov --relative-only --demangled-names $(TEST_DIR)/*.cpp
+	@mkdir -p $(REPORT_DIR)
+	@mv *.gcov $(REPORT_DIR)/
+
+

@@ -9,15 +9,16 @@ namespace lang {
   template <typename T, bool ThreadSafe> class pointernode {
     public:
       explicit pointernode(T* ptr): _ptr(ptr), _refcnt(1) {}
-      ~pointernode() { delete _ptr; }
+      ~pointernode() {
+        -- _refcnt;
+        if (_refcnt == 0) {
+          delete _ptr;
+        }
+      }
       long long reference_count() const
         { return _refcnt; }
-      void increment_reference() {
-        ++ _refcnt;
-      }
-      void decrement_reference() {
-        -- _refcnt;
-      }
+      void increment_reference()
+        { ++ _refcnt; }
       T* reference_pointer() const
         { return _ptr; }
     private:
@@ -44,19 +45,16 @@ namespace lang {
       : _val(rvalue._val)
     { rvalue._val = nullptr; }
 
-  template<typename T, bool ThreadSafe> pointer<T, ThreadSafe>::~pointer() {
-    delete_reference();
-    _val = nullptr;
-  }
-
   template<typename T, bool ThreadSafe>
   void pointer<T, ThreadSafe>::delete_reference() {
     if (not isnull()) {
-      _val -> decrement_reference();
-      if (_val -> reference_count() == 0) {
-        _val -> ~pointernode();
-      }
+      _val -> ~pointernode();
     }
+  }
+
+  template<typename T, bool ThreadSafe> pointer<T, ThreadSafe>::~pointer() {
+    delete_reference();
+    _val = nullptr;
   }
 
   template<typename T, bool ThreadSafe>

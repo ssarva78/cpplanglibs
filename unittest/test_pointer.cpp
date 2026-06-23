@@ -57,6 +57,7 @@ int run_unittest() {
       "Instatiate pointer with default class constructor",
       __testfunc__ {
         pointer<myclass> p;
+        // cppcheck-suppress uninitvar
         expect<std::string>((*p).strval()).is("default string value");
       }
     )
