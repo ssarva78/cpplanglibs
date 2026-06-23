@@ -72,6 +72,22 @@ int run_unittest() {
     )
 
     .test(
+      "Validate explicit cast operator",
+      __testfunc__ {
+        nullable<mynullabletestclass> opt("hello");
+        expect<std::string>(((mynullabletestclass)opt).strval()).is("hello");
+        expect<std::string>(static_cast<mynullabletestclass>(opt).strval()).is("hello");
+
+        mynullabletestclass mc = (mynullabletestclass)opt;
+        expect<std::string>(mc.strval()).is("hello");
+
+        mynullabletestclass mc2("world");
+        mc2 = (mynullabletestclass)opt;
+        expect<std::string>(mc2.strval()).is("hello");
+      }
+    )
+
+    .test(
       "Throws null pointer error on retrieving value from empty nullable",
       __testfunc__ {
         nullable<int> opt_null;

@@ -28,7 +28,8 @@ namespace lang {
     if the value is mutable, concurrent updates to the value may have thread safety
     issues. It is the responsibility of the value class to implement thread safety.
    */
-  template<typename T, bool ThreadSafe = false> class nullable {
+  template<typename T, bool ThreadSafe = false>
+  class nullable {
     public:
       /**
         @brief Constructs null nullable object
@@ -42,18 +43,30 @@ namespace lang {
       explicit nullable(const pointer<T, ThreadSafe>&);
 
       /**
-        @brief Returns refernce to the underlying object from constant nullable
-        @return Object that the pointer points to
+        @brief Returns refernce to the value from constant nullable
+        @return Reference to the value that nullable has
         @throw nullpointer_error Throws null pointer error when there is nullable is null
        */
       const T& operator *() const;
 
       /**
-        @brief Returns refernce to the underlying object. This is primarily used
-        @return Object that the pointer points to
+        @brief Returns refernce to the value.
+        @return Reference to the value that nullable has
         @throw nullpointer_error Throws null pointer error when there is nullable is null
+
+        This should be used with caution. It returns a mutable value. Updates to the value
+        in a multi-thread environment can still cause thread safety issues. The thread
+        safety should be handled by the class implementation of the value.
+        Unless there is a need to update the value, the explicit cast operator is
+        preferred which returns the copy of the value
        */
       T& operator *();
+
+      /**
+        @brief Returns the copy of the value
+        @return Copy of the value that nullable has
+       */
+      explicit operator T() const;
 
       /**
         @brief Checks if the nullable has a non-null object
@@ -107,6 +120,9 @@ namespace lang {
       T or_throw(EArgs...);
 
     private:
+      static_assert(std::is_copy_constructible<T>::value
+          and std::is_copy_assignable<T>::value,
+        "Template type should have copy constructor and copy assignment");
       pointer<T> _ptr;
   };
 
