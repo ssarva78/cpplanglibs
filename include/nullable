@@ -86,6 +86,15 @@ namespace lang {
       T or_else(std::function<T()>) const;
 
       /**
+        @brief Throws exception if nullable doesn't have value; otherwise return nullable
+        value
+        @param args requires to construct exception object
+        @throw exception of type specified in the template
+       */
+      template<typename E, typename... EArgs>
+      T or_throw(EArgs...);
+
+      /**
         @brief Method to return the pointer that holds the value of a constant nullable
         @return Constant pointer that holds the value of the nullable
        */

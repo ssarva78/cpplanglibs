@@ -24,6 +24,13 @@ namespace lang {
   template<typename T> T nullable<T>::or_else(std::function<T()> func) const
     { return isnull()? func() : *_ptr; }
 
+  template<typename T> template<typename E, typename... EArgs>
+  T nullable<T>::or_throw(EArgs... args) {
+    if (not isnull())
+      return *_ptr;
+    throw E(args...);
+  }
+
   template<typename T> const pointer<T>& nullable<T>::operator &() const
     { return _ptr; }
 

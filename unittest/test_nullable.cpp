@@ -118,6 +118,18 @@ int run_unittest() {
       }
     )
 
+    .test(
+      "Throw exception when nullable has no value",
+      __testfunc__ {
+        nullable<int> opt_null;
+        expect<function_block>(__testfunc__{opt_null.or_throw<std::runtime_error>("nullable is null");})
+            .throws(typeid(std::runtime_error), "nullable is null");
+
+        nullable<int> opt2(4);
+        expect<int>(opt2.or_throw<std::exception>()).is(4);
+      }
+    )
+
     ;
 
   return ut.error() + ut.failure();
