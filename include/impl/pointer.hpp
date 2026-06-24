@@ -121,6 +121,14 @@ namespace lang {
     return pointer<T, ThreadSafe>(new pointernode<T, ThreadSafe>((T*)new K(args...)));
   }
 
+  template<typename T, bool ThreadSafe> template<bool NewThreadSafety>
+  pointer<T, NewThreadSafety> pointer<T, ThreadSafe>::clone() const {
+    static_assert(std::is_copy_constructible<T>::value
+        and std::is_copy_assignable<T>::value,
+      "Template type should have copy constructor and copy assignment");
+    return pointer<T, NewThreadSafety>(*_val -> reference_pointer());
+  }
+
   nullpointer_error::nullpointer_error() :
     std::runtime_error(typeutil::classname(typeid(nullpointer_error))) {}
 }

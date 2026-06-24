@@ -37,15 +37,15 @@ namespace lang {
 
         @param args - Arguments required to construct the object of type @c T
        */
-      template<typename... TArgs> pointer(TArgs...);
+      template<typename... TArgs> pointer(TArgs... args);
 
       /**
         @brief Copy constructor that points to the same object as referenced by the
         argument and increments the reference counter by 1
 
-        @param pointer - Pointer that holds reference to the object
+        @param ptr - Pointer that holds reference to the object
        */
-      pointer(const pointer<T, ThreadSafe>&);
+      pointer(const pointer<T, ThreadSafe>& ptr);
 
       /**
         @brief Move constructor that transfers reference ownership to the pointer being
@@ -53,28 +53,29 @@ namespace lang {
 
         @param rvalue - Rvalue reference to the pointer whose ownership is being moved
        */
-      pointer(pointer<T, ThreadSafe>&&);
+      pointer(pointer<T, ThreadSafe>&& rvalue);
 
       /**
         @brief Decrements the reference by 1. If the reference count becomes 0, the
         underlying object is also destructed
-        @param
        */
        ~pointer();
 
        /**
         @brief Assigns a pointer to another, decrements the reference count of lvalue and
         increment the reference count of rvalue
+        @param ptr - Pointer to be assigned with
         @return this
         */
-      pointer<T, ThreadSafe>& operator = (const pointer<T, ThreadSafe>&);
+      pointer<T, ThreadSafe>& operator = (const pointer<T, ThreadSafe>& ptr);
 
       /**
         @brief Moves a pointer to `this`. The argument pointer becomes null and the
         ownership of the reference is transferred to `this`
+        @param ptr - Pointer to be assigned with
         @return this
         */
-      pointer<T, ThreadSafe>& operator = (pointer<T, ThreadSafe>&&);
+      pointer<T, ThreadSafe>& operator = (pointer<T, ThreadSafe>&& ptr);
 
       /**
         @brief Dereference the pointer to the underlying object from a constant pointer
@@ -115,17 +116,19 @@ namespace lang {
 
       /**
         @brief Compares whether two pointers point to the same underlying object
+        @param right - Right side operand of the compare operator
         @retval true - if both the pointers point to the same object instance
         @retval false - if both the pointers point to the different object instance
         */
-      bool operator == (const pointer<T, ThreadSafe>&) const;
+      bool operator == (const pointer<T, ThreadSafe>& right) const;
 
       /**
         @brief Compares whether two pointers point to the same underlying object
+        @param right - Right side operand of the compare operator
         @retval true - if both the pointers point to the different object instance
         @retval false - if both the pointers point to the same object instance
         */
-      bool operator != (const pointer<T, ThreadSafe>&) const = default;
+      bool operator != (const pointer<T, ThreadSafe>& right) const = default;
 
       /**
         @brief Creates a null pointer that refers to @c nullptr address
@@ -149,7 +152,22 @@ namespace lang {
         @endcode
         */
       template<typename K, typename... KArgs>
-      static pointer<T, ThreadSafe> dynamic(KArgs...);
+      static pointer<T, ThreadSafe> dynamic(KArgs... args);
+
+      /**
+        @brief Clones a pointer using copy constructor of the object it points to
+        
+        The cloned pointer refers to a separate copy of its object
+        and hence updates to the value of the object in one pointer doesn't
+        reflect in another pointer
+
+        The equal operator `==` will return false for the cloned pointer
+
+        This can be used to create regular pointer from thread safe pointer and
+        vice versa
+       */
+      template<bool NewThreadSafety = ThreadSafe>
+      pointer<T, NewThreadSafety> clone() const;
 
     private:
       static_assert(!std::is_pointer<T>::value,

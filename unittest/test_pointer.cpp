@@ -9,36 +9,7 @@ using namespace lang;
 
 // resumeservice@naukiri.com
 
-class myclass {
-  public:
-    myclass(const std::string& s, int n) : _m_str(s), _m_n(n) { }
-    myclass() : _m_str("default string value"), _m_n(0) {}
-    const std::string& strval() const { return _m_str; }
-    int intval() const { return _m_n; }
-    virtual std::string getname() { return "myclass"; }
-    virtual ~myclass() {}
-  private:
-    std::string _m_str;
-    int _m_n;
-};
-
-class myderivedclass : public myclass {
-  public:
-    myderivedclass(const std::string& s, int n): myclass(s, n) {}
-    myderivedclass() : myclass() {}
-    std::string getname() override { return "myderivedclass"; }
-};
-
-class myabstract {
-  public:
-    virtual std::string getname() = 0;
-    virtual ~myabstract() {}
-};
-
-class myimplementation : public myabstract {
-  public:
-    virtual std::string getname() override { return "myimplementation"; }
-};
+#include<../unittest/testclasses.hpp>
 
 int run_unittest() {
   unittest ut("Test pointer", __FILE__);
@@ -50,6 +21,9 @@ int run_unittest() {
         pointer<myclass> p("hello", 5);
         expect<std::string>((*p).strval()).is("hello");
         expect<int>((*p).intval()).is(5);
+
+        pointer<noncopyableclass> p2("hello world");
+        expect<std::string>((*p2).strval()).is("hello world");
       }
     )
 
@@ -183,6 +157,23 @@ int run_unittest() {
 
         myclass &mb = dynamic_cast<myclass&>(*pb1);
         expect<std::string>(mb.myclass::getname()).is("myclass");
+      }
+    )
+
+    .test(
+      "Validate pointer clone",
+      __testfunc__ {
+        concurrent_pointer<myclass> cpb("hello", 123);
+        auto pb = cpb.clone<false>(); // creates pointer<myclass> type
+        expect<std::string>((*pb).strval()).is("hello");
+        expect<bool>(typeid(pb) == typeid(cpb)).isfalse();
+        expect<bool>(typeid(pb) == typeid(lang::pointer<myclass, false>)).istrue();
+        (*pb).strval("world");
+        expect<std::string>((*cpb).strval()).is("hello");
+        expect<std::string>((*pb).strval()).is("world");
+        auto cpb2 = cpb.clone();
+        expect<bool>(cpb2 == cpb).isfalse();
+        expect<bool>(typeid(cpb2) == typeid(cpb)).istrue();
       }
     )
 

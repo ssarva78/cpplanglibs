@@ -32,6 +32,12 @@ int run_unittest() {
 
         const nullable<mynullabletestclass> opt2(pointer<mynullabletestclass>("hello"));
         expect<std::string>((*opt2).strval()).is("hello");
+
+        concurrent_nullable<int> copt(5);
+        expect<int>(*copt).is(5);
+
+        nullable<mynullabletestclass> opt3(mynullabletestclass("hello world"));
+        expect<std::string>((*opt3).strval()).is("hello world");
       }
     )
 
