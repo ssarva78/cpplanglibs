@@ -68,16 +68,6 @@ int run_unittest() {
     )
 
     .test(
-      "Validate bool operator overload for isnull",
-      __testfunc__ {
-        nullable<mynullabletestclass> opt_null;
-        expect<bool>(opt_null).isfalse();
-        nullable<mynullabletestclass> opt2(pointer<mynullabletestclass>("hello"));
-        expect<bool>(opt2).istrue();
-      }
-    )
-
-    .test(
       "Validate explicit cast operator",
       __testfunc__ {
         nullable<mynullabletestclass> opt("hello");
@@ -116,7 +106,7 @@ int run_unittest() {
         opt3 = std::move(opt1);
         expect<int>(*opt3).is(10);
         expect<int>(*opt2).is(10);
-        expect<bool>(opt1).isfalse();
+        expect<bool>(opt1.isnull()).istrue();
       }
     )
 
@@ -129,6 +119,19 @@ int run_unittest() {
 
         nullable<int> opt2(4);
         expect<int>(opt2.or_throw<std::exception>()).is(4);
+      }
+    )
+
+    .test(
+      "Transform value in nullable with a call to the function",
+      __testfunc__ {
+        nullable<std::string> opt("hello");
+        auto fn2 = [&](const std::string& s) -> nullable<int> { return nullable<int>(s.length()); };
+        expect<int>(*opt.map(fn2)).is(std::string("hello").length());
+
+        nullable<std::string> opt2;
+        expect<bool>(opt2.map(fn2).isnull()).istrue();
+        expect<int>(opt2.map(fn2).or_else(-1)).is(-1);
       }
     )
 

@@ -28,7 +28,27 @@ namespace lang {
     if the value is mutable, concurrent updates to the value may have thread safety
     issues. It is the responsibility of the value class to implement thread safety.
    */
-  template<typename T, bool ThreadSafe = false>
+  template<typename T, bool ThreadSafe = false> class nullable;
+
+  /**
+    @brief Type trait that returns false if the template type is not nullable type
+   */
+  template<typename C>
+  struct is_nullable_type : std::false_type {};
+
+  /**
+    @brief Type trait that returns true if the template type is nullable type
+   */
+  template<typename C>
+  struct is_nullable_type<nullable<C, false>> : std::true_type {};
+
+  /**
+    @brief Type trait that returns true if the template type is concurrent_nullable type
+   */
+  template<typename C>
+  struct is_nullable_type<nullable<C, true>> : std::true_type {};
+
+  template<typename T, bool ThreadSafe>
   class nullable {
     public:
       /**
@@ -76,13 +96,6 @@ namespace lang {
       bool isnull() const;
 
       /**
-        @brief Convenience method equivalent to `not isnull()`
-        @retval true - if nullable has value
-        @retval false - if nullable has no value
-       */
-      operator bool() const;
-
-      /**
         @brief Returns the value if nullable has a value; otherwise returns the value
         passed in the argument
         @param value - Default value to be returned if nullable is null
@@ -119,10 +132,24 @@ namespace lang {
       template<typename E, typename... EArgs>
       T or_throw(EArgs... args);
 
+      /**
+        @brief If the value is present, invokes the function on the value; otherwise return
+        an empty nullable
+        @param func The function to be invoked on the value. The function should return a
+        nullable
+        @return nullable
+       */
+      template<typename F>
+      auto map(F func) const;
+
     private:
       static_assert(std::is_copy_constructible<T>::value
           and std::is_copy_assignable<T>::value,
         "Template type should have copy constructor and copy assignment");
+      static_assert(!is_nullable_type<T>::value,
+        "Nested nullable is not allowed");
+      static_assert(!std::is_pointer<T>::value,
+        "Template type cannot be a pointer");
       pointer<T, ThreadSafe> _ptr;
   };
 
