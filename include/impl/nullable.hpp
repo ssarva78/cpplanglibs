@@ -27,7 +27,7 @@ namespace lang {
     { return isnull()? value : *_ptr; }
 
   template<typename T, bool ThreadSafe>
-  T nullable<T, ThreadSafe>::or_else(std::function<T()> func) const
+  T nullable<T, ThreadSafe>::or_else(std::function<T()>&& func) const
     { return isnull()? func() : *_ptr; }
 
   template<typename T, bool ThreadSafe> template<typename E, typename... EArgs>
@@ -38,7 +38,7 @@ namespace lang {
   }
 
   template<typename T, bool ThreadSafe> template<typename F>
-  auto nullable<T, ThreadSafe>::map(F func) const {
+  auto nullable<T, ThreadSafe>::map(F&& func) const {
     static_assert(std::is_invocable_v<F, T&>,
         "Argument must be function");
     typename std::invoke_result<F, T&>::type t;

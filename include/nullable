@@ -126,7 +126,7 @@ namespace lang {
         mynullable? *mynullable : getter_function();
         @endcode
        */
-      T or_else(std::function<T()> func) const;
+      T or_else(std::function<T()>&& func) const;
 
       /**
         @brief Throws exception if nullable doesn't have value; otherwise return nullable
@@ -145,7 +145,7 @@ namespace lang {
         @return nullable
        */
       template<typename F>
-      auto map(F func) const;
+      auto map(F&& func) const;
 
     private:
       static_assert(std::is_copy_constructible<T>::value
