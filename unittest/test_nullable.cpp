@@ -8,6 +8,7 @@ class mynullabletestclass {
   public:
     explicit mynullabletestclass(const std::string& s) : _str(s) {}
     const std::string& strval() const { return _str; }
+    void strval(const std::string& s) { _str = s; }
   private:
     std::string _str;
 };
@@ -68,18 +69,21 @@ int run_unittest() {
     )
 
     .test(
-      "Validate explicit cast operator",
+      "Validate cast operator",
       __testfunc__ {
         nullable<mynullabletestclass> opt("hello");
-        expect<std::string>(((mynullabletestclass)opt).strval()).is("hello");
-        expect<std::string>(static_cast<mynullabletestclass>(opt).strval()).is("hello");
-
-        mynullabletestclass mc = (mynullabletestclass)opt;
+        mynullabletestclass mc("world");
+        mc = opt;
         expect<std::string>(mc.strval()).is("hello");
-
-        mynullabletestclass mc2("world");
-        mc2 = (mynullabletestclass)opt;
+        mc.strval("hello world");
+        expect<std::string>((*opt).strval()).is("hello");
+        // mynullabletestclass &mc2 = opt; // this throws compilation error
+                                           // because cast returns const reference
+        const mynullabletestclass &mc2 = opt;
         expect<std::string>(mc2.strval()).is("hello");
+        auto fn = [&](const mynullabletestclass& c) -> std::string
+            { return c.strval(); };
+        expect<std::string>(fn(opt)).is("hello");
       }
     )
 
@@ -89,24 +93,6 @@ int run_unittest() {
         nullable<int> opt_null;
         expect<function_block>(__testfunc__{*opt_null;}).throws(
           typeid(lang::nullpointer_error));
-      }
-    )
-
-    .test(
-      "Validate assignment and move to nullable",
-      __testfunc__ {
-        nullable<int> opt1(5);
-        nullable<int> opt2;
-        opt2 = opt1;
-        expect<int>(*opt2).is(5);
-        *opt1 = 10;
-        expect<int>(*opt2).is(10);
-
-        nullable<int> opt3;
-        opt3 = std::move(opt1);
-        expect<int>(*opt3).is(10);
-        expect<int>(*opt2).is(10);
-        expect<bool>(opt1.isnull()).istrue();
       }
     )
 
@@ -132,6 +118,49 @@ int run_unittest() {
         nullable<std::string> opt2;
         expect<bool>(opt2.map(fn2).isnull()).istrue();
         expect<int>(opt2.map(fn2).or_else(-1)).is(-1);
+      }
+    )
+
+    .test(
+      "Validate assignment and move to nullable",
+      __testfunc__ {
+        nullable<int> opt1(5);
+        nullable<int> opt2;
+        opt2 = opt1;
+        expect<int>(opt2).is(5);
+        *opt1 = 10;
+        expect<int>(opt2).is(10);
+
+        nullable<int> opt3;
+        opt3 = std::move(opt1);
+        expect<int>(opt3).is(10);
+        expect<int>(opt2).is(10);
+        expect<bool>(opt1.isnull()).istrue();
+      }
+    )
+
+    .test(
+      "Validate comparison operators",
+      __testfunc__ {
+        nullable<int> opt1(5), opt2(6), opt3(5);
+        expect<bool>(opt1 == opt3).istrue();
+        expect<bool>(opt1 == 5).istrue();
+        expect<bool>(5 == opt1).istrue();
+        expect<bool>(opt1 != opt2).istrue();
+        expect<bool>(opt1 != 1).istrue();
+        expect<bool>(1 != opt1 ).istrue();
+        expect<bool>(opt1 < opt2).istrue();
+        expect<bool>(opt1 < 8).istrue();
+        expect<bool>(1 < opt2).istrue();
+        expect<bool>(opt1 <= opt2).istrue();
+        expect<bool>(opt1 <= 8).istrue();
+        expect<bool>(1 <= opt2).istrue();
+        expect<bool>(opt2 > opt3).istrue();
+        expect<bool>(opt3 > 1).istrue();
+        expect<bool>(8 > opt3).istrue();
+        expect<bool>(opt2 >= opt3).istrue();
+        expect<bool>(opt3 >= 1).istrue();
+        expect<bool>(8 >= opt3).istrue();
       }
     )
 

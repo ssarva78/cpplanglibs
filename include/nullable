@@ -13,6 +13,9 @@ namespace lang {
     `lang::pointer`. This class also has simpler and fewer methods than `std::optional`,
     yet maintains all the functionalities
 
+    The type of the value object stored in nullable should have both copy constructor and
+    copy assignment operators - either default or custom implemented
+
     `nullable` preserves the pointer to the value in assignement operators
 
     Supports both regular and thread safe variants of the nullable. By default,
@@ -24,7 +27,7 @@ namespace lang {
     @endcode
     `concurrent_nullable<T>` is an alias to `nullable<T, true>`
 
-    Though concurrent_nullable is thread safe with respect to the reference to the value,
+    Though concurrent_nullable is thread safe with respect to reference to the value,
     if the value is mutable, concurrent updates to the value may have thread safety
     issues. It is the responsibility of the value class to implement thread safety.
    */
@@ -52,7 +55,7 @@ namespace lang {
   class nullable {
     public:
       /**
-        @brief Constructs null nullable object
+        @brief Constructs empty nullable object
        */
       nullable();
 
@@ -63,30 +66,32 @@ namespace lang {
       explicit nullable(const pointer<T, ThreadSafe>& ptr);
 
       /**
-        @brief Returns refernce to the value from constant nullable
+        @brief Returns constant reference to the value from nullable
         @return Reference to the value that nullable has
-        @throw nullpointer_error Throws null pointer error when there is nullable is null
+        @throw nullpointer_error Throws null pointer error when is nullable is empty
        */
       const T& operator *() const;
 
       /**
-        @brief Returns refernce to the value.
+        @brief Returns reference to the value.
         @return Reference to the value that nullable has
-        @throw nullpointer_error Throws null pointer error when there is nullable is null
+        @throw nullpointer_error Throws null pointer error when nullable is empty
 
         This should be used with caution. It returns a mutable value. Updates to the value
         in a multi-thread environment can still cause thread safety issues. The thread
         safety should be handled by the class implementation of the value.
-        Unless there is a need to update the value, the explicit cast operator is
-        preferred which returns the copy of the value
+        Unless there is a need to update the value, the cast operator `const T&` is
+        preferred which returns constant reference to the value
        */
       T& operator *();
 
       /**
-        @brief Returns the copy of the value
-        @return Copy of the value that nullable has
+        @brief Returns constant reference to the value. This is preferred over
+        `operator *()` unless there is a need to modify the value
+        @return constant reference to the value that nullable has
+        @throw nullpointer_error Throws null pointer error when is nullable is empty
        */
-      explicit operator T() const;
+      operator const T&() const;
 
       /**
         @brief Checks if the nullable has a non-null object
@@ -98,7 +103,7 @@ namespace lang {
       /**
         @brief Returns the value if nullable has a value; otherwise returns the value
         passed in the argument
-        @param value - Default value to be returned if nullable is null
+        @param value - Default value to be returned if nullable is empty
         @return Returns the immutable object copy constructed either from nullable value
         or from the value passed in the argument
 
