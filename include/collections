@@ -1,0 +1,50 @@
+#ifndef __LANGLIBS_COLLECTIONS_DEF__
+#define __LANGLIBS_COLLECTIONS_DEF__
+
+#include<nullable>
+
+namespace lang::collections {
+
+  class iterator_position_error : public std::runtime_error {
+    public:
+      iterator_position_error();
+  };
+
+  template<typename T, bool ThreadSafe = false> class linkedlistnode;
+  template<typename T, bool ThreadSafe = false> struct linkedlistentry;
+  template<typename T, bool ThreadSafe = false> struct linkedlistcapacity;
+
+  template<typename T, bool ThreadSafe = false> class list {
+    public:
+      class iterator {
+        public:
+          friend list<T, ThreadSafe>;
+          typename list<T, ThreadSafe>::iterator& add(const pointer<T, ThreadSafe>&);
+
+          const nullable<T, ThreadSafe> operator*() const;
+          nullable<T, ThreadSafe> operator*();
+
+          bool has_next() const;
+          bool has_previous() const;
+
+          typename list<T, ThreadSafe>::iterator operator++(int);
+          typename list<T, ThreadSafe>::iterator& operator++();
+        private:
+          pointer<linkedlistnode<T, ThreadSafe>, ThreadSafe> _current;
+          pointer<linkedlistcapacity<T, ThreadSafe>, ThreadSafe> _capacity;
+          iterator(
+              const pointer<linkedlistnode<T, ThreadSafe>, ThreadSafe>&,
+              const pointer<linkedlistcapacity<T, ThreadSafe>, ThreadSafe>&);
+      };
+
+      list();
+      typename list<T, ThreadSafe>::iterator begin() const;
+      long long length() const;
+    private:
+      pointer<linkedlistentry<T, ThreadSafe>, ThreadSafe> _entry;
+  };
+}; // namespace lang::collections
+
+#include<impl/collections/list.hpp>
+
+#endif //__LANGLIBS_COLLECTIONS_DEF__

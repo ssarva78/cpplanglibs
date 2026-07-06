@@ -37,8 +37,11 @@ namespace lang {
 
   template<typename T, bool ThreadSafe>
   pointer<T, ThreadSafe>::pointer(const pointer<T, ThreadSafe>& right)
-      : _val(right._val)
-    { _val -> increment_reference(); }
+      : _val(right._val) {
+    if (not right.isnull()) {
+      _val -> increment_reference();
+    }
+  }
 
   template<typename T, bool ThreadSafe>
   pointer<T, ThreadSafe>::pointer(pointer<T, ThreadSafe>&& rvalue)
@@ -61,8 +64,10 @@ namespace lang {
   pointer<T, ThreadSafe>& pointer<T, ThreadSafe>::operator =
       (const pointer<T, ThreadSafe>& right) {
     delete_reference();
-    _val = right._val;
-    _val -> increment_reference();
+    if (not right.isnull()) {
+      _val = right._val;
+      _val -> increment_reference();
+    }
     return *this;
   }
 

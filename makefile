@@ -48,6 +48,14 @@ $(TEST_DIR)/test_nullable.cpp:
 	@mv $(EXEC)-test_nullable.gcda $(TEST_DIR)/test_nullable.gcda
 	@echo
 
+$(TEST_DIR)/test_list.cpp:
+	@$(eval EXEC := $(basename $@).out)
+	@$(CC) $(CPPFLAGS) $(COVFLAGS) $(INCLUDE) -o $(EXEC) $@ $(LNK)
+	@LD_LIBRARY_PATH=$(LIB_DIR) $(EXEC)
+	@mv $(EXEC)-test_list.gcno $(TEST_DIR)/test_list.gcno
+	@mv $(EXEC)-test_list.gcda $(TEST_DIR)/test_list.gcda
+	@echo
+
 docs: clean
 	@echo generate documentation
 	@rm -rf docs
