@@ -68,7 +68,7 @@ namespace lang {
       /**
         @brief Returns constant reference to the value from nullable
         @return Reference to the value that nullable has
-        @throw nullpointer_error Throws null pointer error when is nullable is empty
+        @throw nullpointer_error Throws null pointer error when nullable is empty
        */
       const T& operator *() const;
 
@@ -79,7 +79,7 @@ namespace lang {
 
         This should be used with caution. It returns a mutable value. Updates to the value
         in a multi-thread environment can still cause thread safety issues. The thread
-        safety should be handled by the class implementation of the value.
+        safety should be handled by the `value` class implementation.
         Unless there is a need to update the value, the cast operator `const T&` is
         preferred which returns constant reference to the value
        */
@@ -89,7 +89,7 @@ namespace lang {
         @brief Returns constant reference to the value. This is preferred over
         `operator *()` unless there is a need to modify the value
         @return constant reference to the value that nullable has
-        @throw nullpointer_error Throws null pointer error when is nullable is empty
+        @throw nullpointer_error Throws null pointer error when nullable is empty
        */
       operator const T&() const;
 
@@ -109,7 +109,7 @@ namespace lang {
 
         This is equivalent of:
         @code{.cpp}
-        mynullable? *mynullable : default_value;
+        mynullable.isnull()? default_value : *mynullable;
         @endcode
        */
       T or_else(const T& value) const;
@@ -123,7 +123,7 @@ namespace lang {
 
         This is equivalent of:
         @code{.cpp}
-        mynullable? *mynullable : getter_function();
+        mynullable.isnull()? func() : *mynullable;
         @endcode
        */
       T or_else(std::function<T()>&& func) const;

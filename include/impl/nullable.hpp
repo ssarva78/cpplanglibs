@@ -32,15 +32,15 @@ namespace lang {
 
   template<typename T, bool ThreadSafe> template<typename E, typename... EArgs>
   T nullable<T, ThreadSafe>::or_throw(EArgs... args) {
-    if (not isnull())
-      return *_ptr;
-    throw E(args...);
+    if (isnull())
+      throw E(args...);
+    return *_ptr;
   }
 
   template<typename T, bool ThreadSafe> template<typename F>
   auto nullable<T, ThreadSafe>::map(F&& func) const {
     static_assert(std::is_invocable_v<F, T&>,
-        "Argument must be function");
+        "Argument must be a function");
     typename std::invoke_result<F, T&>::type t;
     static_assert(is_nullable_type<decltype(t)>::value,
         "Callable return type should be nullable");
