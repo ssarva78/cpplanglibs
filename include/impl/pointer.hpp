@@ -64,8 +64,8 @@ namespace lang {
   pointer<T, ThreadSafe>& pointer<T, ThreadSafe>::operator =
       (const pointer<T, ThreadSafe>& right) {
     delete_reference();
+    _val = right._val;
     if (not right.isnull()) {
-      _val = right._val;
       _val -> increment_reference();
     }
     return *this;

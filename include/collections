@@ -26,23 +26,42 @@ namespace lang::collections {
 
           bool has_next() const;
           bool has_previous() const;
+          operator bool() const;
 
           typename list<T, ThreadSafe>::iterator operator++(int);
           typename list<T, ThreadSafe>::iterator& operator++();
+
+          typename list<T, ThreadSafe>::iterator operator--(int);
+          typename list<T, ThreadSafe>::iterator& operator--();
+
+          bool operator<=>(const list<T, ThreadSafe>::iterator&) const = delete;
+          bool operator==(const list<T, ThreadSafe>::iterator&) const;
+          bool operator!=(const list<T, ThreadSafe>::iterator&) const = default;
+
         private:
           pointer<linkedlistnode<T, ThreadSafe>, ThreadSafe> _current;
           pointer<linkedlistcapacity<T, ThreadSafe>, ThreadSafe> _capacity;
           iterator(
               const pointer<linkedlistnode<T, ThreadSafe>, ThreadSafe>&,
               const pointer<linkedlistcapacity<T, ThreadSafe>, ThreadSafe>&);
+          typename list<T, ThreadSafe>::iterator& current(
+              const pointer<linkedlistnode<T, ThreadSafe>, ThreadSafe>&);
       };
 
       list();
+
       typename list<T, ThreadSafe>::iterator begin() const;
+      typename list<T, ThreadSafe>::iterator end() const;
+
+      nullable<T, ThreadSafe> remove(list<T, ThreadSafe>::iterator&);
+
       long long length() const;
     private:
       pointer<linkedlistentry<T, ThreadSafe>, ThreadSafe> _entry;
   };
+
+  template<typename T> using concurrent_list = list<T, true>;
+
 }; // namespace lang::collections
 
 #include<impl/collections/list.hpp>
