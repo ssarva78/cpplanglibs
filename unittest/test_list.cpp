@@ -38,8 +38,7 @@ int run_unittest() {
 
         list<int> lst2;
         list<int>::iterator iter2 = lst2.begin();
-        expect<bool>((*iter2).isnull()).istrue();
-        expect<int>((*iter2).or_else(-1)).is(-1);
+        expect<function_block>(__testfunc__{auto x = *iter2;}).throws(typeid(iterator_position_error));
       }
     )
 
@@ -48,7 +47,7 @@ int run_unittest() {
       __testfunc__ {
         list<int> lst;
         list<int>::iterator iter = lst.begin();
-        expect<bool>(iter.has_next()).istrue();
+        expect<bool>(iter.has_next()).isfalse();
         expect<bool>(iter.has_previous()).isfalse();
 
         iter.add(1);
@@ -67,6 +66,7 @@ int run_unittest() {
 
         iter = lst.begin();
         int i = 0;
+        // cppcheck-suppress postfixOperator
         for (; iter.has_next(); iter++, i++) {}
         expect<int>(i).is(lst.length());
 
@@ -80,6 +80,7 @@ int run_unittest() {
         expect<int>(i).is(lst.length());
 
         expect<function_block>(__testfunc__ {*iter;}).throws(typeid(iterator_position_error));
+        // cppcheck-suppress postfixOperator
         expect<function_block>(__testfunc__ {iter++;}).throws(typeid(iterator_position_error));
         expect<function_block>(__testfunc__ {++iter;}).throws(typeid(iterator_position_error));
       }
@@ -97,11 +98,12 @@ int run_unittest() {
         expect<bool>(iter.has_next()).isfalse();
         expect<bool>(iter).isfalse();
         expect<function_block>(__testfunc__ {*iter;}).throws(typeid(iterator_position_error));
-        expect<function_block>(__testfunc__ {*iter--;}).throws(typeid(iterator_position_error));
+        expect<function_block>(__testfunc__ {*(iter--);}).throws(typeid(iterator_position_error));
 
         expect<int>(*iter).is(2);
         expect<int>(*(iter--)).is(2);
         expect<int>(*iter).is(1);
+        // cppcheck-suppress postfixOperator
         expect<function_block>(__testfunc__ {iter--;}).throws(typeid(iterator_position_error));
 
         iter = lst.end();
@@ -111,9 +113,11 @@ int run_unittest() {
 
         iter = lst.end();
         int i = 0;
+        // cppcheck-suppress postfixOperator
         for (; iter.has_previous(); iter--, i++) {}
         expect<int>(i).is(lst.length());
         expect<int>(*iter).is(1);
+        // cppcheck-suppress postfixOperator
         expect<function_block>(__testfunc__ {iter--;}).throws(typeid(iterator_position_error));
         expect<function_block>(__testfunc__ {--iter;}).throws(typeid(iterator_position_error));
 
@@ -132,7 +136,9 @@ int run_unittest() {
         lst.begin().add(1).add(2).add(3);
 
         list<int>::iterator iter1 = lst.begin();
+        // cppcheck-suppress knownConditionTrueFalse
         expect<bool>(lst.begin() == iter1).istrue();
+        // cppcheck-suppress knownConditionTrueFalse
         expect<bool>(lst.begin() != iter1).isfalse();
 
         ++iter1;
@@ -171,11 +177,11 @@ int run_unittest() {
       __testfunc__ {
         list<int> lst;
         list<int>::iterator iter = lst.begin();
-        expect<function_block>(__testfunc__{lst.remove(iter);}).throws(typeid(iterator_position_error));
+        expect<function_block>(__testfunc__{iter.remove();}).throws(typeid(iterator_position_error));
         expect<int>(lst.length()).is(0);
         iter.add(1);
         expect<int>(lst.length()).is(1);
-        expect<int>(lst.remove(iter)).is(1);
+        expect<int>(iter.remove()).is(1);
         expect<int>(lst.length()).is(0);
 
         iter = lst.begin();
@@ -183,39 +189,73 @@ int run_unittest() {
         expect<int>(lst.length()).is(3);
         iter = lst.begin();
 
-        expect<int>(lst.remove(iter)).is(1);
+        expect<int>(iter.remove()).is(1);
         expect<int>(lst.length()).is(2);
         expect<int>(*iter).is(2);
         expect<bool>(iter == lst.begin()).istrue();
         expect<int>(*lst.begin()).is(2);
 
-        expect<int>(lst.remove(iter)).is(2);
+        expect<int>(iter.remove()).is(2);
         expect<int>(lst.length()).is(1);
         expect<int>(*iter).is(3);
 
-        expect<int>(lst.remove(iter)).is(3);
+        expect<int>(iter.remove()).is(3);
         expect<int>(lst.length()).is(0);
 
         lst.begin().add(1).add(2);
         expect<int>(lst.length()).is(2);
         iter = lst.end();
-        expect<function_block>(__testfunc__{lst.remove(iter);}).throws(typeid(iterator_position_error));
+        expect<function_block>(__testfunc__{iter.remove();}).throws(typeid(iterator_position_error));
 
         --iter;
-        expect<int>(lst.remove(iter)).is(2);
+        expect<int>(iter.remove()).is(2);
         expect<int>(lst.length()).is(1);
-        expect<int>(*iter).is(1);
+        expect<int>(*--iter).is(1);
 
-        expect<int>(lst.remove(iter)).is(1);
+        expect<int>(iter.remove()).is(1);
         expect<int>(lst.length()).is(0);
 
         lst.begin().add(10).add(20).add(30);
         iter = ++ lst.begin();
-        expect<int>(lst.remove(iter)).is(20);
+        expect<int>(*iter).is(20);
+        expect<int>(iter.remove()).is(20);
         expect<int>(lst.length()).is(2);
         iter = lst.begin();
         expect<int>(*iter++).is(10);
         expect<int>(*iter).is(30);
+      }
+    )
+
+    .test(
+      "Test add initializer list to iterator",
+      __testfunc__ {
+        list<int> lst;
+        auto iter = lst.begin();
+        iter.add({1,2,3});
+        expect<long long>(lst.length()).is(3);
+        expect<int>(*iter).is(3);
+        int i = 1;
+        for (auto item : lst) {
+          expect<int>(item).is(i++);
+        }
+      }
+    )
+
+    .test(
+      "Test add from another list to iterator",
+      __testfunc__ {
+        list<int> lst;
+        list<int> lst1;
+        lst1.begin().add({1,2,3});
+        concurrent_list<int> lst2;
+        lst2.begin().add({4,5,6});
+
+        lst.begin().add(lst1).add(lst2);
+        expect<long long>(lst.length()).is(6);
+        int i = 1;
+        for (auto item : lst) {
+          expect<int>(item).is(i++);
+        }
       }
     )
 

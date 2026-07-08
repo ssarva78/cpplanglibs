@@ -20,6 +20,10 @@ namespace lang::collections {
         public:
           friend list<T, ThreadSafe>;
           typename list<T, ThreadSafe>::iterator& add(const pointer<T, ThreadSafe>&);
+          typename list<T, ThreadSafe>::iterator& add(std::initializer_list<T>);
+          typename list<T, ThreadSafe>::iterator& add(const list<T, false>&);
+          typename list<T, ThreadSafe>::iterator& add(const list<T, true>&);
+          nullable<T, ThreadSafe> remove();
 
           const nullable<T, ThreadSafe> operator*() const;
           nullable<T, ThreadSafe> operator*();
@@ -40,10 +44,10 @@ namespace lang::collections {
 
         private:
           pointer<linkedlistnode<T, ThreadSafe>, ThreadSafe> _current;
-          pointer<linkedlistcapacity<T, ThreadSafe>, ThreadSafe> _capacity;
+          pointer<linkedlistentry<T, ThreadSafe>, ThreadSafe> _entry;
           iterator(
               const pointer<linkedlistnode<T, ThreadSafe>, ThreadSafe>&,
-              const pointer<linkedlistcapacity<T, ThreadSafe>, ThreadSafe>&);
+              const pointer<linkedlistentry<T, ThreadSafe>, ThreadSafe>&);
           typename list<T, ThreadSafe>::iterator& current(
               const pointer<linkedlistnode<T, ThreadSafe>, ThreadSafe>&);
       };
@@ -52,8 +56,6 @@ namespace lang::collections {
 
       typename list<T, ThreadSafe>::iterator begin() const;
       typename list<T, ThreadSafe>::iterator end() const;
-
-      nullable<T, ThreadSafe> remove(list<T, ThreadSafe>::iterator&);
 
       long long length() const;
     private:
