@@ -4,6 +4,7 @@
 namespace lang::collections {
   template<typename T, bool ThreadSafe> class linkedlistnode {
     public:
+      friend list<T, ThreadSafe>::iterator;
       linkedlistnode() :
         _val(pointer<T, ThreadSafe>::null()),
         _next(pointer<linkedlistnode<T, ThreadSafe>, ThreadSafe>::null()),
@@ -61,6 +62,7 @@ namespace lang::collections {
     ~linkedlistentry() {
       (*_first).next() = pointer<linkedlistnode<T, ThreadSafe>, ThreadSafe>::null();
       (*_last).previous() = pointer<linkedlistnode<T, ThreadSafe>, ThreadSafe>::null();
+      _first = _last = pointer<linkedlistnode<T, ThreadSafe>, ThreadSafe>::null();
     }
   };
 
@@ -107,16 +109,32 @@ namespace lang::collections {
 
   template<typename T, bool ThreadSafe> list<T, ThreadSafe>::iterator&
   list<T, ThreadSafe>::iterator::add(const list<T, false>& lst) {
-    for (auto item : lst) {
-      add(item);
+    if constexpr (ThreadSafe) {
+      for (auto item : lst) {
+        add(item);
+      }
+    } else {
+      for (auto it = lst.begin();
+          it != lst.end();
+          ++ it) {
+        add((*it._current)._val);
+      }
     }
     return *this;
   }
 
   template<typename T, bool ThreadSafe> list<T, ThreadSafe>::iterator&
   list<T, ThreadSafe>::iterator::add(const list<T, true>& lst) {
-    for (auto item : lst) {
-      add(item);
+    if constexpr (!ThreadSafe) {
+      for (auto item : lst) {
+        add(item);
+      }
+    } else {
+      for (auto it = lst.begin();
+          it != lst.end();
+          ++ it) {
+        add((*it._current)._val);
+      }
     }
     return *this;
   }
@@ -163,9 +181,9 @@ namespace lang::collections {
   list<T, ThreadSafe>::iterator::operator++(int) {
     if (not has_next())
       throw iterator_position_error();
-    list<T, ThreadSafe>::iterator iter = *this;
+    list<T, ThreadSafe>::iterator it = *this;
     _current = (*_current).next();
-    return iter;
+    return it;
   }
 
   template<typename T, bool ThreadSafe> list<T, ThreadSafe>::iterator&
@@ -180,9 +198,9 @@ namespace lang::collections {
   list<T, ThreadSafe>::iterator::operator--(int) {
     if (not has_previous())
       throw iterator_position_error();
-    list<T, ThreadSafe>::iterator iter = *this;
+    list<T, ThreadSafe>::iterator it = *this;
     _current = (*_current).previous();
-    return iter;
+    return it;
   }
 
   template<typename T, bool ThreadSafe> list<T, ThreadSafe>::iterator&
@@ -210,6 +228,23 @@ namespace lang::collections {
 
   // list methods
   template<typename T, bool ThreadSafe> list<T, ThreadSafe>::list() : _entry() {}
+
+  template<typename T, bool ThreadSafe> list<T, ThreadSafe>::~list()
+    { clear(); }
+
+  template<typename T, bool ThreadSafe> void list<T, ThreadSafe>::clear() {
+    auto current = (*_entry)._first;
+    auto next = (*current).next();
+    while (next) {
+      (*current).previous() = pointer<linkedlistnode<T, ThreadSafe>, ThreadSafe>::null();
+      (*current).next() = pointer<linkedlistnode<T, ThreadSafe>, ThreadSafe>::null();
+      current = next;
+      next = (*current).next();
+    }
+    (*current).previous() = pointer<linkedlistnode<T, ThreadSafe>, ThreadSafe>::null();
+    (*_entry)._first = (*_entry)._last;
+    (*(*_entry)._capacity)._len = 0;
+  }
 
   template<typename T, bool ThreadSafe>
   list<T, ThreadSafe>::iterator list<T, ThreadSafe>::begin() const

@@ -53,6 +53,46 @@ namespace lang::collections {
       };
 
       list();
+      ~list();
+      void clear();
+      /*
+      list(std::initializer_list<T>);
+      list(const list<T, ThreadSafe>&&);
+      
+      virtual list<T, ThreadSafe>& push(const pointer<T, ThreadSafe>&);
+      virtual list<T, ThreadSafe>& push(std::initializer_list<T>);
+      virtual list<T, ThreadSafe>& push(const list<T, false>&);
+      virtual list<T, ThreadSafe>& push(const list<T, true>&);
+
+      template<typename... Args>
+      virtual auto operator<<(Args&&... args) ->
+          decltype(this -> push(std::forward<Args>(args)...))
+        { return push(std::forward<Args>(args)...); }
+      
+      nullable<T, ThreadSafe> pop();
+      nullable<T, ThreadSafe> shift();
+
+      bool operator <=>(const list<T, ThreadSafe>&) const = delete;
+
+      typename list<T, ThreadSafe>::iterator find(
+          std::function<bool(nullable<T, ThreadSafe>)>,
+          typename list<T, ThreadSafe>::iterator& = begin()) const;
+
+      list<T, ThreadSafe> filter(std::function<bool(nullable<T, ThreadSafe>)>) const;
+      
+      template<typename K>
+      list<K, ThreadSafe> map(
+          std::function<nullable<K, ThreadSafe>(nullable<T, ThreadSafe>)>) const;
+      
+      template<typename K>
+      nullable<K, ThreadSafe> reduce(
+          std::function<nullable<K, ThreadSafe>(
+            nullable<K, ThreadSafe>, nullable<T, ThreadSafe>)>) const;
+
+      void foreach(std::function<void(nullable<T, ThreadSafe>)>) const;
+
+      void clear();
+      */
 
       typename list<T, ThreadSafe>::iterator begin() const;
       typename list<T, ThreadSafe>::iterator end() const;

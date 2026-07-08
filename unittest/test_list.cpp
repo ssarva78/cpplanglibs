@@ -256,6 +256,36 @@ int run_unittest() {
         for (auto item : lst) {
           expect<int>(item).is(i++);
         }
+
+        auto it = lst1.begin();
+        **it = 9;
+        expect<int>(*lst1.begin()).is(9);
+        expect<int>(*lst.begin()).is(9);
+
+        auto it2 = lst2.begin();
+        **it2 = 8;
+        expect<int>(*lst2.begin()).is(8);
+        it = lst.begin();
+        ++it;++it;++it;
+        expect<int>(*it).is(4); //since lst and lst2 are different types,
+                                // only value, not reference, is pushed to lst from lst2
+      }
+    )
+
+    .test(
+      "Test clear and validate list is useable after clear",
+      __testfunc__ {
+        list<int> lst;
+        lst.clear();
+        lst.begin().add(1).add(2);
+        expect<long long>(lst.length()).is(2);
+        lst.clear();
+        expect<long long>(lst.length()).is(0);
+        lst.begin().add(1).add(2);
+        int i = 1;
+        for (auto item : lst) {
+          expect<int>(item).is(i++);
+        }
       }
     )
 
