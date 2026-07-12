@@ -5,6 +5,7 @@ using namespace cppunittest;
 using namespace lang;
 using namespace lang::collections;
 
+/*
 struct pointer_memory_trace {
   char st_type;
   long long st_memory_location;
@@ -22,6 +23,7 @@ pointer_memory_trace parse(const std::string& str) {
   std::string sz;
   std::getline(ss, sz, '/');
 }
+*/
 
 int run_unittest() {
   unittest ut("Test list", __FILE__);
