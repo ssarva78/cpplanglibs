@@ -23,6 +23,8 @@ namespace lang::collections {
           typename list<T, ThreadSafe>::iterator& add(std::initializer_list<T>);
           typename list<T, ThreadSafe>::iterator& add(const list<T, false>&);
           typename list<T, ThreadSafe>::iterator& add(const list<T, true>&);
+          typename list<T, ThreadSafe>::iterator& add_before(
+              const pointer<T, ThreadSafe>&);
           nullable<T, ThreadSafe> remove();
 
           const nullable<T, ThreadSafe> operator*() const;
@@ -54,6 +56,8 @@ namespace lang::collections {
 
       list();
       ~list();
+      typename list<T, ThreadSafe>::iterator begin() const;
+      typename list<T, ThreadSafe>::iterator end() const;
       void clear();
       /*
       list(std::initializer_list<T>);
@@ -91,12 +95,7 @@ namespace lang::collections {
 
       void foreach(std::function<void(nullable<T, ThreadSafe>)>) const;
 
-      void clear();
       */
-
-      typename list<T, ThreadSafe>::iterator begin() const;
-      typename list<T, ThreadSafe>::iterator end() const;
-
       long long length() const;
     private:
       pointer<linkedlistentry<T, ThreadSafe>, ThreadSafe> _entry;

@@ -59,11 +59,6 @@ namespace lang::collections {
     pointer<linkedlistcapacity<T, ThreadSafe>, ThreadSafe> _capacity;
     pointer<linkedlistnode<T, ThreadSafe>, ThreadSafe> _last, _first;
     linkedlistentry() : _capacity(), _last(), _first(_last) {}
-    ~linkedlistentry() {
-      (*_first).next() = pointer<linkedlistnode<T, ThreadSafe>, ThreadSafe>::null();
-      (*_last).previous() = pointer<linkedlistnode<T, ThreadSafe>, ThreadSafe>::null();
-      _first = _last = pointer<linkedlistnode<T, ThreadSafe>, ThreadSafe>::null();
-    }
   };
 
   template<typename T, bool ThreadSafe> struct linkedlistcapacity {
@@ -93,6 +88,18 @@ namespace lang::collections {
     } else {
       // attempting to add after terminating node
       throw iterator_position_error();
+    }
+    ++(*(*_entry)._capacity)._len;
+    _current = newnode;
+    return *this;
+  }
+
+  template<typename T, bool ThreadSafe> list<T, ThreadSafe>::iterator&
+  list<T, ThreadSafe>::iterator::add_before(const pointer<T, ThreadSafe>& ptr) {
+    pointer<linkedlistnode<T, ThreadSafe>, ThreadSafe> newnode(ptr);
+    linkedlistnode<T, ThreadSafe>::link(newnode, _current);
+    if ((*_entry)._first == (*_entry)._last) {
+      (*_entry)._first = newnode;
     }
     ++(*(*_entry)._capacity)._len;
     _current = newnode;
@@ -229,8 +236,9 @@ namespace lang::collections {
   // list methods
   template<typename T, bool ThreadSafe> list<T, ThreadSafe>::list() : _entry() {}
 
-  template<typename T, bool ThreadSafe> list<T, ThreadSafe>::~list()
-    { clear(); }
+  template<typename T, bool ThreadSafe> list<T, ThreadSafe>::~list() {
+    clear();
+  }
 
   template<typename T, bool ThreadSafe> void list<T, ThreadSafe>::clear() {
     auto current = (*_entry)._first;

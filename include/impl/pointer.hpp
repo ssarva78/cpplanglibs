@@ -6,12 +6,27 @@
 
 namespace lang {
   /** @cond */
+
+  static bool _pointer_memory_trace = false;
+  static std::ostream *_pointer_memory_trace_os;
+
   template <typename T, bool ThreadSafe> class pointernode {
     public:
-      explicit pointernode(T* ptr): _ptr(ptr), _refcnt(1) {}
+      explicit pointernode(T* ptr): _ptr(ptr), _refcnt(1) {
+        if (_pointer_memory_trace) {
+          std::cout << "C/"
+              << reinterpret_cast<long long>(_ptr) << "/"
+              << sizeof(T) << "/"
+              << typeutil::classname(typeid(T)) << std::endl;
+        }
+      }
       ~pointernode() {
         -- _refcnt;
         if (_refcnt == 0) {
+          if (_pointer_memory_trace) {
+            std::cout << "D/"
+                << reinterpret_cast<long long>(_ptr) << std::endl;
+          }
           delete _ptr;
         }
       }
@@ -21,6 +36,7 @@ namespace lang {
         { ++ _refcnt; }
       T* reference_pointer() const
         { return _ptr; }
+
     private:
       T* _ptr;
       using reference_count_t
@@ -29,6 +45,7 @@ namespace lang {
       pointernode(const pointernode<T, ThreadSafe>&) = delete;
       pointernode<T, ThreadSafe>& operator=(const pointernode<T, ThreadSafe>&) = delete;
   };
+
   /** @endcond */
 
   template<typename T, bool ThreadSafe> template <typename... TArgs>
@@ -133,6 +150,16 @@ namespace lang {
       "Template type should have copy constructor and copy assignment");
     return pointer<T, NewThreadSafety>(*_val -> reference_pointer());
   }
+
+  template<typename T, bool ThreadSafe>
+  void pointer<T, ThreadSafe>::enable_memory_trace(const std::ostream& out) {
+    _pointer_memory_trace_os = new std::ostream(out.rdbuf());
+    _pointer_memory_trace = true;
+  }
+
+  template<typename T, bool ThreadSafe>
+  void pointer<T, ThreadSafe>::disable_memory_trace()
+    { _pointer_memory_trace = false; }
 
   nullpointer_error::nullpointer_error() :
     std::runtime_error(typeutil::classname(typeid(nullpointer_error))) {}

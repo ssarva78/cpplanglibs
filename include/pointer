@@ -169,6 +169,17 @@ namespace lang {
       template<bool NewThreadSafety = ThreadSafe>
       pointer<T, NewThreadSafety> clone() const;
 
+      /**
+        @brief Enables memory trace for pointer to analyze memory leak
+        @param os output stream which the memory allocation and deallocation
+        information is written to. This is optional parameter and defaults to std::cout
+       */
+      static void enable_memory_trace(const std::ostream& os = std::cout);
+      /**
+        @brief Disables memory trace for pointer to analyze memory leak
+       */
+      static void disable_memory_trace();
+
     private:
       static_assert(!std::is_pointer<T>::value,
         "Template type cannot be a pointer");
