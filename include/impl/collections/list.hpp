@@ -32,6 +32,10 @@ namespace lang::collections {
       static void link(
           pointer<linkedlistnode<T, ThreadSafe>, ThreadSafe>& left,
           pointer<linkedlistnode<T, ThreadSafe>, ThreadSafe>& right) {
+        if ((*right).previous()) {
+          (*(*right).previous()).next() = left;
+          (*left).previous() = (*right).previous();
+        }
         (*right).previous() = left;
         if ((*left).next()) {
           (*right).next() = (*left).next();

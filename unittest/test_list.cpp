@@ -5,31 +5,10 @@ using namespace cppunittest;
 using namespace lang;
 using namespace lang::collections;
 
-/*
-struct pointer_memory_trace {
-  char st_type;
-  long long st_memory_location;
-  size_t st_alloc_size;
-  std::string st_type_name;
-};
-
-pointer_memory_trace parse(const std::string& str) {
-  std::istringstream ss(str);
-  pointer_memory_trace trace;
-  std::getline(ss, trace.st_type, '/');
-  std::string addr;
-  std::getline(ss, addr, '/');
-  trace.st_memory_location = std::stoll(addr);
-  std::string sz;
-  std::getline(ss, sz, '/');
-}
-*/
-
 int run_unittest() {
   unittest ut("Test list", __FILE__);
 
   ut
-    /*
     .test(
       "Test list add to iterator",
       __testfunc__ {
@@ -259,6 +238,7 @@ int run_unittest() {
         for (auto item : lst) {
           expect<int>(item).is(i++);
         }
+        expect<int>(i).is(lst.length()+1);
       }
     )
 
@@ -277,6 +257,7 @@ int run_unittest() {
         for (auto item : lst) {
           expect<int>(item).is(i++);
         }
+        expect<int>(i).is(lst.length()+1);
 
         auto it = lst1.begin();
         **it = 9;
@@ -307,20 +288,25 @@ int run_unittest() {
         for (auto item : lst) {
           expect<int>(item).is(i++);
         }
+        expect<int>(i).is(lst.length()+1);
       }
     )
-    */
 
     .test(
       "Add before current node in iterator",
       __testfunc__ {
         list<int> lst;
         lst.begin().add_before(0);
+        expect<bool>(lst.begin() == lst.end()).isfalse();
         expect<long long>(lst.length()).is(1);
         auto iter = lst.begin();
         expect<int>(*iter).is(0);
+
         lst.end().add_before(3);
         expect<long long>(lst.length()).is(2);
+        ++iter;
+        expect<int>(*iter).is(3);
+
         expect<int>(*--lst.end()).is(3);
         lst.begin().add(1).add(2);
         expect<long long>(lst.length()).is(4);
@@ -328,6 +314,7 @@ int run_unittest() {
         for(auto item : lst) {
           expect<int>(*item).is(i++);
         }
+        expect<int>(i).is(lst.length());
       }
     )
 
@@ -335,18 +322,46 @@ int run_unittest() {
       "Test memory leak",
       __testfunc__ {
         std::stringstream ss;
-        pointer<int>::enable_memory_trace(ss);
+        pointer_memory_trace::enable(ss);
         {
           list<int> lst;
-          auto iter = lst.begin();
-          iter.add(1).add(3).add(4);
-          iter = lst.begin();
-          iter.add(2);
-          //while (iter.has_next()) iter.remove();
-          //iter.add(3);
+          lst.begin().add_before(0);
+          lst.end().add_before(3);
+          lst.begin().add(1).add(2);
+          auto iter = lst.end();
+          --iter;
+          iter.remove();
+          --iter;
+          iter.add(3);
+          expect<long long>(lst.length()).is(4);
+          int i = 0;
+          for(auto item : lst) {
+            expect<int>(*item).is(i++);
+          }
+          expect<int>(i).is(4);
         }
-        pointer<int>::disable_memory_trace();
-        std::cout << ss.str() << std::endl;
+        pointer_memory_trace::disable();
+        std::string tok;
+        list<pointer_memory_trace> constructors, destructors;
+        auto iter_constr = constructors.begin();
+        auto iter_destr = destructors.begin();
+        while(std::getline(ss, tok)) {
+          pointer_memory_trace trace(tok);
+          if (trace.st_type == 'C') iter_constr.add(trace);
+          else iter_destr.add(trace);
+        }
+        expect<long long>(constructors.length()).is(13);
+        expect<long long>(constructors.length()).is(destructors.length());
+        for (auto item_c : constructors) {
+          bool found = false;
+          for (auto item_d : destructors) {
+            if ((*item_c).st_memory_location == (*item_d).st_memory_location) {
+              found = true;
+              break;
+            }
+          }
+          expect<bool>(found).istrue(); //matching destructor is found
+        }
       }
     )
 

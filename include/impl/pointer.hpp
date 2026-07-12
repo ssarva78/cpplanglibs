@@ -7,14 +7,43 @@
 namespace lang {
   /** @cond */
 
-  static bool _pointer_memory_trace = false;
+  static bool _pointer_memory_trace_flag = false;
   static std::ostream *_pointer_memory_trace_os;
+
+  struct pointer_memory_trace {
+    char st_type;
+    long long st_memory_location;
+    size_t st_alloc_size;
+    std::string st_type_name;
+
+    explicit pointer_memory_trace(const std::string& str) {
+      std::istringstream ss(str);
+      st_type = str[0];
+      auto next_delimiter_pos = str.find("/", 2);
+      st_memory_location = std::stoll(str.substr(2, next_delimiter_pos));
+      if (next_delimiter_pos == std::string::npos)
+        return;
+      auto prev_delimiter_pos = next_delimiter_pos + 1;
+      next_delimiter_pos = str.find("/", prev_delimiter_pos);
+      st_alloc_size = std::stoi(str.substr(prev_delimiter_pos, next_delimiter_pos));
+      st_type_name = str.substr(next_delimiter_pos + 1);
+    }
+
+    static void enable(const std::ostream& out) {
+      _pointer_memory_trace_os = new std::ostream(out.rdbuf());
+      _pointer_memory_trace_flag = true;
+    }
+
+    static void disable() {
+      _pointer_memory_trace_flag = false;
+    }
+  };
 
   template <typename T, bool ThreadSafe> class pointernode {
     public:
       explicit pointernode(T* ptr): _ptr(ptr), _refcnt(1) {
-        if (_pointer_memory_trace) {
-          std::cout << "C/"
+        if (_pointer_memory_trace_flag) {
+          *_pointer_memory_trace_os << "C/"
               << reinterpret_cast<long long>(_ptr) << "/"
               << sizeof(T) << "/"
               << typeutil::classname(typeid(T)) << std::endl;
@@ -23,8 +52,8 @@ namespace lang {
       ~pointernode() {
         -- _refcnt;
         if (_refcnt == 0) {
-          if (_pointer_memory_trace) {
-            std::cout << "D/"
+          if (_pointer_memory_trace_flag) {
+            *_pointer_memory_trace_os << "D/"
                 << reinterpret_cast<long long>(_ptr) << std::endl;
           }
           delete _ptr;
@@ -150,16 +179,6 @@ namespace lang {
       "Template type should have copy constructor and copy assignment");
     return pointer<T, NewThreadSafety>(*_val -> reference_pointer());
   }
-
-  template<typename T, bool ThreadSafe>
-  void pointer<T, ThreadSafe>::enable_memory_trace(const std::ostream& out) {
-    _pointer_memory_trace_os = new std::ostream(out.rdbuf());
-    _pointer_memory_trace = true;
-  }
-
-  template<typename T, bool ThreadSafe>
-  void pointer<T, ThreadSafe>::disable_memory_trace()
-    { _pointer_memory_trace = false; }
 
   nullpointer_error::nullpointer_error() :
     std::runtime_error(typeutil::classname(typeid(nullpointer_error))) {}
