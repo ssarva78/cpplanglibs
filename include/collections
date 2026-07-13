@@ -82,8 +82,10 @@ namespace lang::collections {
           std::function<bool(nullable<T, ThreadSafe>)>,
           typename list<T, ThreadSafe>::iterator& = begin()) const;
 
+      */
       list<T, ThreadSafe> filter(std::function<bool(nullable<T, ThreadSafe>)>) const;
       
+      /*
       template<typename K>
       list<K, ThreadSafe> map(
           std::function<nullable<K, ThreadSafe>(nullable<T, ThreadSafe>)>) const;

@@ -36,6 +36,7 @@ namespace lang {
 
     static void disable() {
       _pointer_memory_trace_flag = false;
+      delete _pointer_memory_trace_os;
     }
   };
 

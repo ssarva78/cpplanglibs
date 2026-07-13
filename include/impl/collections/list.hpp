@@ -10,6 +10,7 @@ namespace lang::collections {
         _next(pointer<linkedlistnode<T, ThreadSafe>, ThreadSafe>::null()),
         _previous(pointer<linkedlistnode<T, ThreadSafe>, ThreadSafe>::null())
         {}
+
       explicit linkedlistnode(const pointer<T, ThreadSafe>& ptr) :
         _val(ptr),
         _next(pointer<linkedlistnode<T, ThreadSafe>, ThreadSafe>::null()),
@@ -136,7 +137,7 @@ namespace lang::collections {
 
   template<typename T, bool ThreadSafe> list<T, ThreadSafe>::iterator&
   list<T, ThreadSafe>::iterator::add(const list<T, true>& lst) {
-    if constexpr (!ThreadSafe) {
+    if constexpr (not ThreadSafe) {
       for (auto item : lst) {
         add(item);
       }
@@ -265,6 +266,18 @@ namespace lang::collections {
   template<typename T, bool ThreadSafe>
   list<T, ThreadSafe>::iterator list<T, ThreadSafe>::end() const
     { return list<T, ThreadSafe>::iterator((*_entry)._last, _entry); }
+
+  template<typename T, bool ThreadSafe> list<T, ThreadSafe>
+  list<T, ThreadSafe>::filter(std::function<bool(nullable<T, ThreadSafe>)> func) const {
+    list<T, ThreadSafe> filtered_list;
+    auto it = filtered_list.begin();
+    for (auto item : *this) {
+      if (not item.isnull() and func(item)) {
+        it.add(&item);
+      }
+    }
+    return filtered_list;
+  }
 
   template<typename T, bool ThreadSafe> long long list<T, ThreadSafe>::length() const
     { return (*(*_entry)._capacity)._len; }

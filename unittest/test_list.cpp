@@ -1,5 +1,6 @@
 #include <unittest>
 #include <collections>
+#include <thread>
 
 using namespace cppunittest;
 using namespace lang;
@@ -333,6 +334,7 @@ int run_unittest() {
           iter.remove();
           --iter;
           iter.add(3);
+          auto iter2 = iter--;
           expect<long long>(lst.length()).is(4);
           int i = 0;
           for(auto item : lst) {
@@ -362,6 +364,66 @@ int run_unittest() {
           }
           expect<bool>(found).istrue(); //matching destructor is found
         }
+      }
+    )
+
+    .test(
+      "Test concurrent add",
+      __testfunc__ {
+        concurrent_list<int> clist;
+        auto iter = clist.begin();
+        for (int i = 0; i < 100000; i++) {
+          iter.add(i);
+        }
+
+        auto additems = [&](int start) -> void {
+          auto it = --clist.end();
+          for (int i = 0; i < 50000; i++)
+            it.add(start+i);
+        };
+        auto run1 = [&]() -> void {additems(100000);};
+        auto run2 = [&]() -> void {additems(150000);};
+        std::thread t1(run1), t2(run2);
+        t1.join();
+        t2.join();
+        std::cout << clist.length() << std::endl;
+        expect<long long>(clist.length()).is(200000);
+
+        auto lst1 = clist.filter([&](const concurrent_nullable<int>& v) -> bool {
+          return ((int)v < 150000);
+        });
+        auto lst2 = clist.filter([&](const concurrent_nullable<int>& v) -> bool {
+          return ((int)v >= 150000);
+        });
+        int i = 0;
+        for(auto item : lst1) {
+          expect<int>(*item).is(i++);
+        }
+        i = 150000;
+        for(auto item : lst2) {
+          expect<int>(*item).is(i++);
+        }
+      }
+    )
+
+    .test(
+      "Test concurrent remove",
+      __testfunc__ {
+        concurrent_list<int> clist;
+        auto iter = clist.begin();
+        for (int i = 0; i < 100000; i++) {
+          iter.add(i);
+        }
+
+        auto pop = [&]() -> void {
+          for (int i = 0; i < 40000; i++)
+            (clist.begin()).remove();
+        };
+        std::thread t1(pop), t2(pop);
+        t1.join();
+        t2.join();
+        expect<long long>(clist.length()).is(20000);
+
       }
     )
 

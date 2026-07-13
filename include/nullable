@@ -94,6 +94,12 @@ namespace lang {
       operator const T&() const;
 
       /**
+        @brief Returns the lang::pointer to the value.
+        @return lang::pointer to the value
+       */
+      const pointer<T, ThreadSafe>& operator &() const;
+
+      /**
         @brief Checks if the nullable has a non-null object
         @retval true - if nullable has non-null value
         @retval false - if nullable has no value
@@ -109,8 +115,25 @@ namespace lang {
 
         This is equivalent of:
         @code{.cpp}
-        mynullable.isnull()? default_value : *mynullable;
+        mynullable.isnull()? default_value : *mynullable; 
         @endcode
+
+        Caution should be applied while using this method when the argument is passed as
+        function call. The function call in the argument is always called even if the
+        nullable has value which is unnecessary.
+
+        Instead of the below usage, it is more efficient to use with ?: operator
+        @code{.cpp}
+        mynullable.or_else(func(...));
+        @endcode
+
+        However, this doesn't apply when the function pointer is passed in the argument
+        in the below method. In this case, the function is called only when nullable is
+        null.
+        @code{.cpp}
+        T or_else(std::function<T()>&& func) const;
+        @endcode
+
        */
       T or_else(const T& value) const;
 

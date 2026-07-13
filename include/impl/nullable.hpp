@@ -19,6 +19,10 @@ namespace lang {
   nullable<T, ThreadSafe>::operator const T&() const
     { return *_ptr; }
 
+  template<typename T, bool ThreadSafe>
+  const pointer<T, ThreadSafe>& nullable<T, ThreadSafe>::operator &() const
+    { return _ptr; }
+
   template<typename T, bool ThreadSafe> bool nullable<T, ThreadSafe>::isnull() const
     { return _ptr.isnull(); }
 

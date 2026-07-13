@@ -164,6 +164,20 @@ int run_unittest() {
       }
     )
 
+    .test(
+      "Test value reference and pointer",
+      __testfunc__ {
+        nullable<int> n(5);
+        *n = 10;
+        expect<int>(n).is(10);
+        pointer<int> p;
+        p = &n;
+        expect<int>(*p).is(10);
+        *p = 25;
+        expect<int>(*p).is(25);
+      }
+    )
+
     ;
 
   return ut.error() + ut.failure();
